@@ -14,62 +14,180 @@ class KerjaPraktekScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Container(
+        body: SizedBox(
           width: double.maxFinite,
-          padding: EdgeInsets.symmetric(vertical: 12.v),
           child: Column(
             children: [
-              _buildWelcomeRow(context),
-              SizedBox(height: 36.v),
-              Text(
-                "Kerja Praktek",
-                style: theme.textTheme.titleMedium,
-              ),
-              SizedBox(height: 4.v),
-              Divider(
-                color: theme.colorScheme.primary,
-              ),
-              Divider(
-                color: appTheme.green200,
-              ),
-              SizedBox(height: 21.v),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(left: 21.h),
-                  child: Row(
-                    children: [
-                      CustomIconButton(
-                        height: 22.adaptSize,
-                        width: 22.adaptSize,
-                        padding: EdgeInsets.all(1.h),
-                        child: CustomImageView(
-                          imagePath: ImageConstant.imgRemoveCircle,
+              SizedBox(height: 12.v),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 109.v),
+                    child: Column(
+                      children: [
+                        _buildWelcomeSection(context),
+                        SizedBox(height: 36.v),
+                        Text(
+                          "Kerja Praktek",
+                          style: theme.textTheme.titleMedium,
                         ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          left: 18.h,
-                          top: 4.v,
+                        SizedBox(height: 4.v),
+                        Divider(
+                          color: theme.colorScheme.primary,
                         ),
-                        child: Text(
-                          " Laporan akhir belum diunggah",
-                          style: CustomTextStyles.bodyMediumGray900,
+                        Divider(
+                          color: appTheme.green200,
                         ),
-                      )
-                    ],
+                        SizedBox(height: 11.v),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 21.h),
+                            child: Row(
+                              children: [
+                                CustomIconButton(
+                                  height: 22.adaptSize,
+                                  width: 22.adaptSize,
+                                  padding: EdgeInsets.all(1.h),
+                                  child: CustomImageView(
+                                    imagePath: ImageConstant.imgRemoveCircle,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    left: 18.h,
+                                    top: 4.v,
+                                  ),
+                                  child: Text(
+                                    " Laporan akhir belum diunggah",
+                                    style: CustomTextStyles.bodyMediumGray900,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 23.v),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 17.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 11.h,
+                            vertical: 15.v,
+                          ),
+                          decoration: AppDecoration.fillGreen20001.copyWith(
+                            borderRadius: BorderRadiusStyle.roundedBorder12,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 14.v),
+                              Padding(
+                                padding: EdgeInsets.only(left: 5.h),
+                                child: Text(
+                                  "Informasi Kegiatan",
+                                  style: CustomTextStyles.titleMediumOnPrimary,
+                                ),
+                              ),
+                              SizedBox(height: 5.v),
+                              CustomImageView(
+                                imagePath: ImageConstant.imgImage1,
+                                height: 122.adaptSize,
+                                width: 122.adaptSize,
+                                alignment: Alignment.center,
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 5.h),
+                                child: Text(
+                                  "Semen Padang",
+                                  style: theme.textTheme.bodyLarge,
+                                ),
+                              ),
+                              SizedBox(height: 4.v),
+                              Padding(
+                                padding: EdgeInsets.only(left: 5.h),
+                                child: Text(
+                                  "Kerja Praktek",
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ),
+                              SizedBox(height: 33.v),
+                              Container(
+                                width: 61.h,
+                                margin: EdgeInsets.only(left: 5.h),
+                                child: Text(
+                                  "Anggota :\nLorem\nIpsum\nDolor\nSit",
+                                  maxLines: 5,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyMedium!.copyWith(
+                                    height: 1.43,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 30.v),
+                              Divider(
+                                indent: 5.h,
+                              ),
+                              SizedBox(height: 35.v),
+                              Padding(
+                                padding: EdgeInsets.only(left: 5.h),
+                                child: Text(
+                                  "Kode Kegiatan",
+                                  style: CustomTextStyles.titleSmallGray800,
+                                ),
+                              ),
+                              SizedBox(height: 6.v),
+                              Padding(
+                                padding: EdgeInsets.only(left: 5.h),
+                                child: Text(
+                                  "SI67822",
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ),
+                              SizedBox(height: 35.v),
+                              Divider(
+                                indent: 5.h,
+                              ),
+                              SizedBox(height: 35.v),
+                              Padding(
+                                padding: EdgeInsets.only(left: 5.h),
+                                child: Text(
+                                  "Periode Kegiatan",
+                                  style: CustomTextStyles.titleSmallGray800,
+                                ),
+                              ),
+                              SizedBox(height: 4.v),
+                              Padding(
+                                padding: EdgeInsets.only(left: 5.h),
+                                child: Text(
+                                  "21 Januari 2024 - 29 Februari 2024",
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ),
+                              SizedBox(height: 35.v),
+                              Divider(
+                                indent: 5.h,
+                              )
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 18.v),
+                        CustomElevatedButton(
+                          height: 53.v,
+                          text: "Upload Laporan Akhir",
+                          margin: EdgeInsets.only(
+                            left: 18.h,
+                            right: 12.h,
+                          ),
+                          buttonStyle: CustomButtonStyles.fillPrimaryTL10,
+                          buttonTextStyle:
+                              CustomTextStyles.titleMediumWhiteA700,
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 21.v),
-              CustomElevatedButton(
-                height: 53.v,
-                text: "Upload Laporan Akhir",
-                margin: EdgeInsets.symmetric(horizontal: 15.h),
-                buttonStyle: CustomButtonStyles.fillPrimaryTL10,
-                buttonTextStyle: CustomTextStyles.titleMediumWhiteA700,
-              ),
-              SizedBox(height: 5.v)
+              )
             ],
           ),
         ),
@@ -78,7 +196,7 @@ class KerjaPraktekScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildWelcomeRow(BuildContext context) {
+  Widget _buildWelcomeSection(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
         left: 21.h,

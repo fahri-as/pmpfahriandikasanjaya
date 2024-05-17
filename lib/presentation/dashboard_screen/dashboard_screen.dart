@@ -42,7 +42,7 @@ class DashboardScreen extends StatelessWidget {
                 style: CustomTextStyles.bodyMediumOnPrimary,
               ),
               SizedBox(height: 2.v),
-              _buildStackTitleSemenPadang(context)
+              _buildStackTitleSemen(context)
             ],
           ),
         ),
@@ -75,7 +75,7 @@ class DashboardScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildStackTitleSemenPadang(BuildContext context) {
+  Widget _buildStackTitleSemen(BuildContext context) {
     return SizedBox(
       height: 356.v,
       width: 294.h,

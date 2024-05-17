@@ -1,5 +1,6 @@
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import '../app_export.dart';
 
 const String dateTimeFormatPattern = 'dd/MM/yyyy';
 
