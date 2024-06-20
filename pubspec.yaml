@@ -1,28 +1,29 @@
 name: pmpfahriandikasanjaya
 description: A new Flutter project.
 version: 1.0.0+1
-environment: 
-  sdk: '>=2.12.0 <3.0.0'
-dependencies: 
-  flutter: 
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+dependencies:
+  flutter:
     sdk: flutter
-  flutter_localizations: 
+  flutter_localizations:
     sdk: flutter
   cached_network_image: ^3.3.0
   flutter_svg: ^2.0.9
   intl: ^0.18.0
   connectivity_plus: ^5.0.2
-dev_dependencies: 
-  flutter_test: 
+  http: 1.2.1
+dev_dependencies:
+  flutter_test:
     sdk: flutter
-flutter: 
+flutter:
   uses-material-design: true
-  assets: 
+  assets:
     - assets/
     - assets/images/
-  fonts: 
+  fonts:
     - family: Roboto
-      fonts: 
+      fonts:
         - asset: assets/fonts/RobotoRomanMedium.ttf
           weight: 500
         - asset: assets/fonts/RobotoMedium.ttf

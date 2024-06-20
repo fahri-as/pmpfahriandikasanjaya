@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/app_export.dart';
+import '../presentation/login_screen/login_screen.dart';
 import '../presentation/app_navigation_screen/app_navigation_screen.dart';
 import '../presentation/daftar_seminar_screen/daftar_seminar_screen.dart';
 import '../presentation/dashboard_screen/dashboard_screen.dart';
@@ -21,6 +22,8 @@ class AppRoutes {
 
   static const String appNavigationScreen = '/app_navigation_screen';
 
+  static const String loginScreen = '/login_screen';
+
   static const String initialRoute = '/initialRoute';
 
   static Map<String, WidgetBuilder> routes = {
@@ -30,6 +33,7 @@ class AppRoutes {
     seminarScreen: (context) => SeminarScreen(),
     kerjaPraktekScreen: (context) => KerjaPraktekScreen(),
     appNavigationScreen: (context) => AppNavigationScreen(),
+    loginScreen: (context) => const LoginScreen(),
     initialRoute: (context) => AppNavigationScreen()
   };
 }
