@@ -33,7 +33,7 @@ class AppRoutes {
     seminarScreen: (context) => SeminarScreen(),
     kerjaPraktekScreen: (context) => KerjaPraktekScreen(),
     appNavigationScreen: (context) => AppNavigationScreen(),
-    loginScreen: (context) => const LoginScreen(),
+    loginScreen: (context) => LoginScreen(),
     initialRoute: (context) => AppNavigationScreen()
   };
 }

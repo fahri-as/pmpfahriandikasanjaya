@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../../core/app_export.dart';
-import '../../models/login.dart'; // Ensure the path is correct
+import '../../models/login.dart';
+import 'package:flutter/gestures.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -17,25 +17,42 @@ class LoginScreen extends StatelessWidget {
       String email = emailController.text;
       String password = passwordController.text;
 
+      // Adjust your API endpoint
+      final url = Uri.parse('https://backend-pmp.unand.dev/api/login');
       final response = await http.post(
-        Uri.parse('https://backend-pmp.unand.dev/api/login'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
+        url,
+        body: {
           'email': email,
           'password': password,
-        }),
+        },
       );
 
       if (response.statusCode == 200) {
+        // Successful login
         final jsonResponse = json.decode(response.body);
-        final welcome = Welcome.fromJson(jsonResponse);
+        Welcome welcome = Welcome.fromJson(jsonResponse);
 
-        // Store the token securely (not shown in this example)
-
-        Navigator.pushNamed(context, AppRoutes.dashboardScreen);
+        // Navigate to dashboard screen on successful login
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Login Berhasil'),
+              content: Text('Token: ${welcome.token}\nType: ${welcome.type}'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.pushNamed(context, AppRoutes.dashboardScreen);
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
       } else {
+        // Failed login
         showDialog(
           context: context,
           builder: (BuildContext context) {
