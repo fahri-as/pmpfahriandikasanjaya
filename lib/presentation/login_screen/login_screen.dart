@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../core/app_export.dart';
 import '../../models/login.dart';
 import 'package:flutter/gestures.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -31,6 +32,10 @@ class LoginScreen extends StatelessWidget {
         // Successful login
         final jsonResponse = json.decode(response.body);
         Welcome welcome = Welcome.fromJson(jsonResponse);
+
+        // Store the token
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', welcome.token);
 
         // Navigate to dashboard screen on successful login
         showDialog(

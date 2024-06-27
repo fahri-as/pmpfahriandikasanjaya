@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/app_export.dart';
 import '../../widgets/app_bar/appbar_subtitle.dart';
 import '../../widgets/app_bar/appbar_title.dart';
@@ -8,10 +9,17 @@ import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_outlined_button.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({Key? key})
-      : super(
-          key: key,
-        );
+  const DashboardScreen({Key? key}) : super(key: key);
+
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    print('Token removed: ${prefs.getString('token')}'); // Debug print
+
+    Navigator.pushNamedAndRemoveUntil(
+        context, AppRoutes.loginScreen, (route) => false);
+    print('Navigated to Login Screen'); // Debug print
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +29,7 @@ class DashboardScreen extends StatelessWidget {
         body: Container(
           width: 326.h,
           margin: EdgeInsets.fromLTRB(17.h, 28.v, 17.h, 5.v),
-          padding: EdgeInsets.symmetric(
-            horizontal: 16.h,
-            vertical: 15.v,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 15.v),
           decoration: AppDecoration.fillGreen.copyWith(
             borderRadius: BorderRadiusStyle.roundedBorder12,
           ),
@@ -42,7 +47,7 @@ class DashboardScreen extends StatelessWidget {
                 style: CustomTextStyles.bodyMediumOnPrimary,
               ),
               SizedBox(height: 2.v),
-              _buildStackTitleSemen(context)
+              _buildStackTitleSemen(context),
             ],
           ),
         ),
@@ -50,7 +55,6 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  /// Section Widget
   PreferredSizeWidget _buildAppBarWelcome(BuildContext context) {
     return CustomAppBar(
       title: AppbarTitle(
@@ -62,19 +66,27 @@ class DashboardScreen extends StatelessWidget {
           text: "Fahri Andika Sanjaya",
           margin: EdgeInsets.fromLTRB(15.h, 21.v, 8.h, 12.v),
         ),
-        AppbarTrailingImage(
-          imagePath: ImageConstant.imgAvatars3dAvatar21,
-          margin: EdgeInsets.only(
-            left: 9.h,
-            top: 8.v,
-            right: 23.h,
+        PopupMenuButton<String>(
+          onSelected: (String result) {
+            if (result == 'logout') {
+              _logout(context);
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'logout',
+              child: Text('Logout'),
+            ),
+          ],
+          child: AppbarTrailingImage(
+            imagePath: ImageConstant.imgAvatars3dAvatar21,
+            margin: EdgeInsets.only(left: 9.h, top: 8.v, right: 23.h),
           ),
-        )
+        ),
       ],
     );
   }
 
-  /// Section Widget
   Widget _buildStackTitleSemen(BuildContext context) {
     return SizedBox(
       height: 356.v,
@@ -129,13 +141,13 @@ class DashboardScreen extends StatelessWidget {
                         width: 85.h,
                         text: "Detail",
                         margin: EdgeInsets.only(left: 8.h),
-                      )
+                      ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

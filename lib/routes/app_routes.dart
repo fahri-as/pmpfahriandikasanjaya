@@ -6,9 +6,8 @@ import '../presentation/daftar_seminar_screen/daftar_seminar_screen.dart';
 import '../presentation/dashboard_screen/dashboard_screen.dart';
 import '../presentation/detail_screen/detail_screen.dart';
 import '../presentation/kerja_praktek_screen/kerja_praktek_screen.dart';
-import '../presentation/seminar_screen/seminar_screen.dart'; // ignore_for_file: must_be_immutable
+import '../presentation/seminar_screen/seminar_screen.dart';
 
-// ignore_for_file: must_be_immutable
 class AppRoutes {
   static const String dashboardScreen = '/dashboard_screen';
 
