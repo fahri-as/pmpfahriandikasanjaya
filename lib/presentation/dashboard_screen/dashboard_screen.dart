@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import '../../core/app_export.dart';
 import '../../widgets/app_bar/appbar_subtitle.dart';
 import '../../widgets/app_bar/appbar_title.dart';
@@ -7,9 +9,36 @@ import '../../widgets/app_bar/appbar_trailing_image.dart';
 import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_outlined_button.dart';
+import '../../models/internship.dart'; // Import the Internship model
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
+
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  Future<Internship>? futureInternship;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkToken();
+  }
+
+  Future<void> _checkToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    if (token == null) {
+      // Token not found, navigate to login screen
+      Navigator.pushNamedAndRemoveUntil(
+          context, AppRoutes.loginScreen, (route) => false);
+    } else {
+      futureInternship = fetchInternshipData(token);
+      setState(() {});
+    }
+  }
 
   Future<void> _logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -21,36 +50,59 @@ class DashboardScreen extends StatelessWidget {
     print('Navigated to Login Screen'); // Debug print
   }
 
+  Future<Internship> fetchInternshipData(String token) async {
+    final response = await http.get(
+      Uri.parse('https://backend-pmp.unand.dev/api/my-internships'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      print('Response data: ${response.body}'); // Debug print
+      return internshipFromJson(response.body);
+    } else {
+      print(
+          'Failed to load internship data: ${response.statusCode} ${response.body}'); // Debug print
+      throw Exception('Failed to load internship data');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: _buildAppBarWelcome(context),
-        body: Container(
-          width: 326.h,
-          margin: EdgeInsets.fromLTRB(17.h, 28.v, 17.h, 5.v),
-          padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 15.v),
-          decoration: AppDecoration.fillGreen.copyWith(
-            borderRadius: BorderRadiusStyle.roundedBorder12,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Semen Padang",
-                style: CustomTextStyles.titleMediumOnPrimary,
+        body: futureInternship == null
+            ? Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Expanded(
+                    child: FutureBuilder<Internship>(
+                      future: futureInternship,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(
+                              child: Text('Error: ${snapshot.error}'));
+                        } else if (snapshot.hasData) {
+                          return _buildDashboardContent(
+                              context, snapshot.data!);
+                        } else {
+                          return Center(child: Text('No data available'));
+                        }
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () => _logout(context),
+                      child: Text('Logout'),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 8.v),
-              Text(
-                "Kerja Praktek",
-                style: CustomTextStyles.bodyMediumOnPrimary,
-              ),
-              SizedBox(height: 2.v),
-              _buildStackTitleSemen(context),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -87,7 +139,35 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStackTitleSemen(BuildContext context) {
+  Widget _buildDashboardContent(BuildContext context, Internship internship) {
+    return Container(
+      width: 326.h,
+      margin: EdgeInsets.fromLTRB(17.h, 28.v, 17.h, 5.v),
+      padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 15.v),
+      decoration: AppDecoration.fillGreen.copyWith(
+        borderRadius: BorderRadiusStyle.roundedBorder12,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            internship.company,
+            style: CustomTextStyles.titleMediumOnPrimary,
+          ),
+          SizedBox(height: 8.v),
+          Text(
+            "Kerja Praktek",
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 2.v),
+          _buildStackTitleSemen(context, internship),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStackTitleSemen(BuildContext context, Internship internship) {
     return SizedBox(
       height: 356.v,
       width: 294.h,
@@ -107,7 +187,7 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Semen Padang",
+                  internship.company,
                   style: theme.textTheme.bodyLarge,
                 ),
                 SizedBox(height: 4.v),
