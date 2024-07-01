@@ -19,7 +19,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  Future<Internship>? futureInternship;
+  Future<List<Internship>>? futureInternships;
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Navigator.pushNamedAndRemoveUntil(
           context, AppRoutes.loginScreen, (route) => false);
     } else {
-      futureInternship = fetchInternshipData(token);
+      futureInternships = fetchInternshipData(token);
       setState(() {});
     }
   }
@@ -50,7 +50,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     print('Navigated to Login Screen'); // Debug print
   }
 
-  Future<Internship> fetchInternshipData(String token) async {
+  Future<List<Internship>> fetchInternshipData(String token) async {
     final response = await http.get(
       Uri.parse('https://backend-pmp.unand.dev/api/my-internships'),
       headers: {'Authorization': 'Bearer $token'},
@@ -58,7 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (response.statusCode == 200) {
       print('Response data: ${response.body}'); // Debug print
-      return internshipFromJson(response.body);
+      return internshipsFromJson(response.body);
     } else {
       print(
           'Failed to load internship data: ${response.statusCode} ${response.body}'); // Debug print
@@ -71,13 +71,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: _buildAppBarWelcome(context),
-        body: futureInternship == null
+        body: futureInternships == null
             ? Center(child: CircularProgressIndicator())
             : Column(
                 children: [
                   Expanded(
-                    child: FutureBuilder<Internship>(
-                      future: futureInternship,
+                    child: FutureBuilder<List<Internship>>(
+                      future: futureInternships,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -86,8 +86,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           return Center(
                               child: Text('Error: ${snapshot.error}'));
                         } else if (snapshot.hasData) {
-                          return _buildDashboardContent(
-                              context, snapshot.data!);
+                          return ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+                              return _buildDashboardContent(
+                                  context, snapshot.data![index]);
+                            },
+                          );
                         } else {
                           return Center(child: Text('No data available'));
                         }
@@ -169,17 +174,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildStackTitleSemen(BuildContext context, Internship internship) {
     return SizedBox(
-      height: 356.v,
+      height: 300.v,
       width: 294.h,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          CustomImageView(
-            imagePath: ImageConstant.imgImage1,
-            height: 122.adaptSize,
-            width: 122.adaptSize,
-            alignment: Alignment.topCenter,
-          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Column(
@@ -192,7 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 SizedBox(height: 4.v),
                 Text(
-                  "Kerja Praktek",
+                  internship.title,
                   style: theme.textTheme.bodyMedium,
                 ),
                 SizedBox(height: 33.v),
@@ -221,6 +220,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         width: 85.h,
                         text: "Detail",
                         margin: EdgeInsets.only(left: 8.h),
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.detailScreen,
+                            arguments: internship.id,
+                          );
+                        },
                       ),
                     ],
                   ),

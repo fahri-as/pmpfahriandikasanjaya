@@ -1,8 +1,10 @@
 import 'dart:convert';
 
-Internship internshipFromJson(String str) => Internship.fromJson(json.decode(str));
+List<Internship> internshipsFromJson(String str) => List<Internship>.from(
+    json.decode(str)['internships'].map((x) => Internship.fromJson(x)));
 
-String internshipToJson(Internship data) => json.encode(data.toJson());
+String internshipsToJson(List<Internship> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class Internship {
   final String id;

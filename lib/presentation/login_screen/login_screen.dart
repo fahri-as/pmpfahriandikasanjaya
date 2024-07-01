@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../core/app_export.dart';
-import '../../models/welcome.dart';
+import '../../models/login.dart'; // Import the login model
 import 'package:flutter/gestures.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,6 +13,26 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+
+    void _showErrorDialog(BuildContext context, String message) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Login Gagal'),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
 
     Future<void> _login(BuildContext context) async {
       String email = emailController.text;
@@ -29,52 +49,53 @@ class LoginScreen extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
+        // Log the response body for debugging
+        print('Response body: ${response.body}');
+
         // Successful login
         final jsonResponse = json.decode(response.body);
-        Welcome welcome = Welcome.fromJson(jsonResponse);
 
-        // Store the token
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', welcome.token);
+        // Log the jsonResponse for debugging
+        print('Parsed JSON: $jsonResponse');
 
-        // Navigate to dashboard screen on successful login
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Login Berhasil'),
-              content: Text('Token: ${welcome.token}\nType: ${welcome.type}'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.pushNamed(context, AppRoutes.dashboardScreen);
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
+        try {
+          Login login = Login.fromJson(jsonResponse);
+
+          // Log the login object for debugging
+          print(
+              'Login object: ${login.token}, ${login.type}, ${login.expiresAt}');
+
+          // Store the token
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', login.token);
+
+          // Navigate to dashboard screen on successful login
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Login Berhasil'),
+                content: Text('Token: ${login.token}'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.pushNamed(context, AppRoutes.dashboardScreen);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } catch (e) {
+          // Log the error for debugging
+          print('Error parsing JSON: $e');
+          _showErrorDialog(context, 'Failed to parse response.');
+        }
       } else {
         // Failed login
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Login Gagal'),
-              content: const Text('Email atau Password tidak valid.'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
+        _showErrorDialog(context, 'Email atau Password tidak valid.');
       }
     }
 
