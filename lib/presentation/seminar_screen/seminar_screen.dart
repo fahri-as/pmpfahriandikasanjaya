@@ -150,36 +150,47 @@ class _SeminarScreenState extends State<SeminarScreen> {
         body: SingleChildScrollView(
           child: Container(
             width: double.maxFinite,
-            padding: EdgeInsets.symmetric(vertical: 12.v),
+            padding: EdgeInsets.symmetric(vertical: 12),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeaderRow(context),
-                SizedBox(height: 34.v),
-                Text(
-                  "Seminar",
-                  style: theme.textTheme.titleMedium,
+                SizedBox(height: 24),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Seminar",
+                        style: Theme.of(context).textTheme.headline6,
+                      ),
+                      Divider(height: 12, thickness: 2),
+                      SizedBox(height: 16),
+                      _buildInputFields(context),
+                      SizedBox(height: 16),
+                      CustomElevatedButton(
+                        height: 48,
+                        text: "Seminar Telah Dilaksanakan",
+                        onPressed: () {
+                          _submitSeminarData(context);
+                        },
+                        buttonStyle: CustomButtonStyles.fillPrimaryTL10,
+                        buttonTextStyle: CustomTextStyles.titleMediumWhiteA700,
+                      ),
+                      SizedBox(height: 16),
+                      CustomElevatedButton(
+                        height: 48,
+                        text: "Back",
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        buttonStyle: CustomButtonStyles.fillPrimaryTL10,
+                        buttonTextStyle: CustomTextStyles.titleMediumWhiteA700,
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 6.v),
-                Divider(
-                  color: theme.colorScheme.primary,
-                ),
-                Divider(
-                  color: appTheme.green200,
-                ),
-                SizedBox(height: 21.v),
-                _buildInputFields(context),
-                SizedBox(height: 22.v),
-                CustomElevatedButton(
-                  height: 53.v,
-                  text: "Seminar Telah Dilaksanakan",
-                  onPressed: () {
-                    _submitSeminarData(context);
-                  },
-                  margin: EdgeInsets.symmetric(horizontal: 15.h),
-                  buttonStyle: CustomButtonStyles.fillPrimaryTL10,
-                  buttonTextStyle: CustomTextStyles.titleMediumWhiteA700,
-                ),
-                SizedBox(height: 5.v)
               ],
             ),
           ),
@@ -188,170 +199,137 @@ class _SeminarScreenState extends State<SeminarScreen> {
     );
   }
 
-  /// Section Widget
   Widget _buildHeaderRow(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 21.h,
-        right: 15.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: EdgeInsets.only(
-              top: 10.v,
-              bottom: 11.v,
-            ),
-            child: Text(
-              "Welcome",
-              style: theme.textTheme.titleSmall,
-            ),
+          Text(
+            "Welcome",
+            style: Theme.of(context).textTheme.subtitle1,
           ),
           Spacer(),
           FutureBuilder<String?>(
-            future: _getUserName(), // Fetch username from SharedPreferences
+            future: _getUserName(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator(); // Placeholder while loading
+                return CircularProgressIndicator();
               }
               if (snapshot.hasData) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    top: 13.v,
-                    bottom: 12.v,
-                  ),
-                  child: Text(
-                    snapshot.data!,
-                    style: theme.textTheme.labelMedium,
-                  ),
+                return Text(
+                  snapshot.data!,
+                  style: Theme.of(context).textTheme.bodyText2,
                 );
               } else {
-                return SizedBox(); // Handle error case or default behavior
+                return SizedBox();
               }
             },
           ),
-          CustomImageView(
-            imagePath: ImageConstant.imgAvatars3dAvatar21,
-            height: 39.adaptSize,
-            width: 39.adaptSize,
-            margin: EdgeInsets.only(left: 8.h),
-          )
+          SizedBox(width: 8),
+          CircleAvatar(
+            backgroundImage: AssetImage('assets/images/avatar.png'),
+            radius: 20,
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInputFields(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: titleController,
+          decoration: InputDecoration(
+            labelText: 'Title',
+            hintText: 'Enter Title',
+          ),
+        ),
+        SizedBox(height: 12),
+        TextFormField(
+          controller: dateController,
+          decoration: InputDecoration(
+            labelText: 'Date',
+            hintText: 'Enter Date (YYYY-MM-DD)',
+          ),
+        ),
+        SizedBox(height: 12),
+        if (selectedStudentIds.isNotEmpty) ...[
+          Text(
+            'Selected Students:',
+            style: Theme.of(context).textTheme.subtitle2,
+          ),
+          SizedBox(height: 8),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: selectedStudentIds.length,
+            itemBuilder: (context, index) {
+              Student? selectedStudent = students.firstWhere(
+                (student) => student.id == selectedStudentIds[index],
+                orElse: () => Student(id: '', name: 'Unknown'),
+              );
+              return ListTile(
+                title: Text(selectedStudent.name),
+              );
+            },
+          ),
+          SizedBox(height: 8),
+        ],
+        Text(
+          'Select Student:',
+          style: Theme.of(context).textTheme.subtitle2,
+        ),
+        SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: selectedStudentId,
+          onChanged: (newValue) {
+            setState(() {
+              selectedStudentId = newValue;
+            });
+          },
+          items: students.map<DropdownMenuItem<String>>((Student student) {
+            return DropdownMenuItem<String>(
+              value: student.id,
+              child: Text(student.name),
+            );
+          }).toList(),
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey),
+            ),
+            hintText: 'Select Student',
+          ),
+        ),
+        SizedBox(height: 10.v),
+        CustomElevatedButton(
+            height: 53.v,
+            text: "Add Selected Student",
+            onPressed: () {
+              _addSelectedStudent();
+            }),
+        SizedBox(height: 12),
+        TextFormField(
+          controller: seminarNotesController,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: 'Enter Seminar Notes (Optional)',
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   Future<String?> _getUserName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('user_name');
-  }
-
-  /// Section Widget
-  Widget _buildInputFields(BuildContext context) {
-    List<Student> filteredStudents = [];
-
-    return Padding(
-      padding: EdgeInsets.only(left: 21.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextFormField(
-            controller: titleController,
-            decoration: InputDecoration(
-              labelText: 'Title',
-              hintText: 'Enter Title',
-            ),
-          ),
-          SizedBox(height: 10.v),
-          TextFormField(
-            controller: dateController,
-            decoration: InputDecoration(
-              labelText: 'Date',
-              hintText: 'Enter Date (YYYY-MM-DD)',
-            ),
-          ),
-          if (selectedStudentIds.isNotEmpty)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Selected Students:',
-                  style: CustomTextStyles.bodyMediumGray900_1,
-                ),
-                SizedBox(height: 10.v),
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: selectedStudentIds.length,
-                  itemBuilder: (context, index) {
-                    // Find the selected student by id
-                    Student? selectedStudent = students.firstWhere(
-                      (student) => student.id == selectedStudentIds[index],
-                      orElse: () => Student(id: '', name: 'Unknown'),
-                    );
-                    return ListTile(
-                      title: Text(selectedStudent.name),
-                      // You can add further actions here if needed
-                    );
-                  },
-                ),
-                SizedBox(height: 10.v),
-              ],
-            ),
-          Text(
-            'Select Student:',
-            style: CustomTextStyles.bodyMediumGray900_1,
-          ),
-          SizedBox(height: 10.v),
-          DropdownButtonFormField<String>(
-            value: selectedStudentId,
-            onChanged: (newValue) {
-              setState(() {
-                selectedStudentId = newValue;
-              });
-            },
-            items: students.map<DropdownMenuItem<String>>((Student student) {
-              return DropdownMenuItem<String>(
-                value: student.id,
-                child: Text(student.name),
-              );
-            }).toList(),
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(horizontal: 15.h),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey),
-              ),
-              hintText: 'Select Student',
-            ),
-          ),
-          SizedBox(height: 10.v),
-          CustomElevatedButton(
-            height: 53.v,
-            text: "Add Selected Student",
-            onPressed: () {
-              _addSelectedStudent();
-            },
-            margin: EdgeInsets.symmetric(horizontal: 15.h),
-            buttonStyle: CustomButtonStyles.fillPrimaryTL10,
-            buttonTextStyle: CustomTextStyles.titleMediumWhiteA700,
-          ),
-          SizedBox(height: 10.v),
-          TextFormField(
-            controller: seminarNotesController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: 'Enter Seminar Notes (Optional)',
-              contentPadding: EdgeInsets.symmetric(horizontal: 15.h),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

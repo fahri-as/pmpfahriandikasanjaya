@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/app_export.dart';
 import '../../models/user_profile.dart';
 import '../../widgets/app_bar/appbar_trailing_image.dart';
+import '../../widgets/custom_elevated_button.dart';
+import '../../theme/custom_button_style.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -39,7 +41,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               UserProfile.fromJson(data['data']); // Access 'data' field
         });
         // Save user's name to SharedPreferences
-        await prefs.setString('user_name', userProfile!.name ?? '');
       } else {
         // Handle HTTP error
         throw Exception('Failed to load user profile');
@@ -63,49 +64,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: userProfile == null
           ? const Center(child: CircularProgressIndicator())
-          : Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Container(
+          : SingleChildScrollView(
+              child: Center(
+                child: Padding(
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 5,
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      AppbarTrailingImage(
-                        imagePath: ImageConstant.imgAvatars3dAvatar21,
-                        margin:
-                            EdgeInsets.only(left: 9.h, top: 8.v, right: 23.h),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        userProfile!.name ?? 'Not available',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 5,
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      _buildProfileDetail(
-                          'NIM', userProfile!.nim ?? 'Not available'),
-                      _buildProfileDetail(
-                          'Email', userProfile!.email ?? 'Not available'),
-                      _buildProfileDetail('Department',
-                          userProfile!.departmentName ?? 'Not available'),
-                      _buildProfileDetail('Year', userProfile!.year.toString()),
-                      const SizedBox(height: 20),
-                    ],
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppbarTrailingImage(
+                          imagePath: ImageConstant.imgAvatars3dAvatar21,
+                          margin:
+                              EdgeInsets.only(left: 9.h, top: 8.v, right: 23.h),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          userProfile!.name ?? 'Not available',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildProfileDetail(
+                            'NIM', userProfile!.nim ?? 'Not available'),
+                        _buildProfileDetail(
+                            'Email', userProfile!.email ?? 'Not available'),
+                        _buildProfileDetail('Department',
+                            userProfile!.departmentName ?? 'Not available'),
+                        _buildProfileDetail(
+                            'Year', userProfile!.year.toString()),
+                        const SizedBox(height: 20),
+                        CustomElevatedButton(
+                          height: 48,
+                          text: "Logout",
+                          onPressed: () {
+                            _logout(context);
+                          },
+                          buttonStyle: CustomButtonStyles.fillPrimaryTL10,
+                          buttonTextStyle:
+                              CustomTextStyles.titleMediumWhiteA700,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -141,5 +155,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('user_name');
+    await prefs.remove('internship_id'); // Remove stored internship ID
+    Navigator.pushNamedAndRemoveUntil(
+        context, AppRoutes.loginScreen, (route) => false);
   }
 }

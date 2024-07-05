@@ -2,13 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../../core/app_export.dart';
-import '../../widgets/app_bar/appbar_subtitle.dart';
-import '../../widgets/app_bar/appbar_title.dart';
-import '../../theme/custom_button_style.dart';
-import '../../widgets/custom_elevated_button.dart';
-import '../../widgets/app_bar/appbar_trailing_image.dart';
-import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../models/detail_internship.dart'; // Import the DetailInternship model
 
 class DetailScreen extends StatefulWidget {
@@ -104,7 +97,21 @@ class _DetailScreenState extends State<DetailScreen> {
 
     return SafeArea(
       child: Scaffold(
-        appBar: _buildWelcomeAppBar(context),
+        appBar: AppBar(
+          title: Text("Welcome"),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(userName ?? "User Name"),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                backgroundImage: AssetImage('assets/avatar.jpg'),
+              ),
+            ),
+          ],
+        ),
         body: RefreshIndicator(
           onRefresh: _fetchInternshipDetail,
           child: FutureBuilder<DetailInternship>(
@@ -117,153 +124,119 @@ class _DetailScreenState extends State<DetailScreen> {
               } else if (snapshot.hasData) {
                 return SingleChildScrollView(
                   child: Container(
-                    width: 326.h,
-                    margin: EdgeInsets.fromLTRB(17.h, 27.v, 17.h, 5.v),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 11.h,
-                      vertical: 16.v,
-                    ),
-                    decoration: AppDecoration.fillGreen20001.copyWith(
-                      borderRadius: BorderRadiusStyle.roundedBorder12,
+                    width: MediaQuery.of(context).size.width,
+                    margin:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+                    padding: EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.green[200],
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 13.v),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            "Informasi Kegiatan",
-                            style: CustomTextStyles.titleMediumOnPrimary,
-                          ),
+                        Text(
+                          "Informasi Kegiatan",
+                          style: TextStyle(
+                              fontSize: 20.0, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 5.v),
-                        CustomImageView(
-                          imagePath: ImageConstant.imgImage1,
-                          height: 122.adaptSize,
-                          width: 122.adaptSize,
-                          alignment: Alignment.center,
+                        Text(
+                          snapshot.data!.proposal.company.name,
+                          style: TextStyle(fontSize: 18.0),
                         ),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            snapshot.data!.proposal.company.name,
-                            style: theme.textTheme.bodyLarge,
-                          ),
+                        SizedBox(height: 16.0),
+                        Text(
+                          snapshot.data!.reportTitle,
+                          style: TextStyle(fontSize: 16.0),
                         ),
-                        SizedBox(height: 4.v),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            "Kerja Praktek",
-                            style: theme.textTheme.bodyMedium,
-                          ),
+                        SizedBox(height: 24.0),
+                        Text(
+                          snapshot.data!.seminarNotes,
+                          maxLines: 5,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 16.0, height: 1.5),
                         ),
-                        SizedBox(height: 33.v),
-                        Container(
-                          width: 61.h,
-                          margin: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            "Anggota :\nLorem\nIpsum\nDolor\nSit",
-                            maxLines: 5,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyMedium!.copyWith(
-                              height: 1.43,
-                            ),
-                          ),
+                        SizedBox(height: 24.0),
+                        Text(
+                          "Status Kerja Praktek",
+                          style: TextStyle(
+                              fontSize: 16.0, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 30.v),
-                        Divider(
-                          indent: 5.h,
+                        Text(
+                          snapshot.data!.status,
+                          style: TextStyle(fontSize: 16.0),
                         ),
-                        //status kp
-                        SizedBox(height: 35.v),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            "Status Kerja Praktek",
-                            style: CustomTextStyles.titleSmallGray800,
-                          ),
+                        SizedBox(height: 24.0),
+                        Text(
+                          "Grade",
+                          style: TextStyle(
+                              fontSize: 16.0, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 6.v),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            snapshot.data!.status,
-                            style: theme.textTheme.bodyMedium,
-                          ),
+                        Text(
+                          snapshot.data!.grade,
+                          style: TextStyle(fontSize: 16.0),
                         ),
-                        SizedBox(height: 35.v),
-                        Divider(
-                          indent: 5.h,
+                        SizedBox(height: 24.0),
+                        Text(
+                          "Tanggal Seminar",
+                          style: TextStyle(
+                              fontSize: 16.0, fontWeight: FontWeight.bold),
                         ),
-                        //kode kegiatan
-                        SizedBox(height: 35.v),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            "Kode Kegiatan",
-                            style: CustomTextStyles.titleSmallGray800,
-                          ),
+                        Text(
+                          "${snapshot.data!.seminarDate}",
+                          style: TextStyle(fontSize: 16.0),
                         ),
-                        SizedBox(height: 6.v),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            snapshot.data!.id,
-                            style: theme.textTheme.bodyMedium,
-                          ),
+                        SizedBox(height: 24.0),
+                        Text(
+                          "Room Id Seminar",
+                          style: TextStyle(
+                              fontSize: 16.0, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 35.v),
-                        Divider(
-                          indent: 5.h,
+                        Text(
+                          snapshot.data!.seminarRoomId ?? "",
+                          style: TextStyle(fontSize: 16.0),
                         ),
-                        SizedBox(height: 35.v),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            "Periode Kegiatan",
-                            style: CustomTextStyles.titleSmallGray800,
-                          ),
+                        SizedBox(height: 24.0),
+                        Text(
+                          "Link Seminar",
+                          style: TextStyle(
+                              fontSize: 16.0, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 4.v),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5.h),
-                          child: Text(
-                            "${snapshot.data!.startAt} - ${snapshot.data!.endAt}",
-                            style: theme.textTheme.bodyMedium,
-                          ),
+                        Text(
+                          snapshot.data!.linkSeminar ?? "",
+                          style: TextStyle(fontSize: 16.0),
                         ),
-                        SizedBox(height: 35.v),
-                        Divider(
-                          indent: 5.h,
+                        SizedBox(height: 24.0),
+                        Text(
+                          "Kode Kegiatan",
+                          style: TextStyle(
+                              fontSize: 16.0, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 31.v),
-
-                        SizedBox(height: 22.v), // Spacing before the new button
-                        CustomElevatedButton(
-                          height: 53.v,
-                          text: "Post Final",
-                          margin: EdgeInsets.symmetric(horizontal: 15.h),
-                          buttonStyle: CustomButtonStyles.fillPrimaryTL10,
-                          buttonTextStyle:
-                              CustomTextStyles.titleMediumWhiteA700,
+                        Text(
+                          snapshot.data!.id,
+                          style: TextStyle(fontSize: 16.0),
+                        ),
+                        SizedBox(height: 24.0),
+                        Text(
+                          "Periode Kegiatan",
+                          style: TextStyle(
+                              fontSize: 16.0, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          "${snapshot.data!.startAt} - ${snapshot.data!.endAt}",
+                          style: TextStyle(fontSize: 16.0),
+                        ),
+                        SizedBox(height: 24.0),
+                        ElevatedButton(
                           onPressed: _postFinalInternship,
+                          child: Text("Post Final"),
                         ),
-                        SizedBox(height: 22.v), // Spacing before the new button
-                        CustomElevatedButton(
-                          height: 53.v,
-                          text: "Back",
-                          margin: EdgeInsets.symmetric(horizontal: 15.h),
-                          buttonStyle: CustomButtonStyles.fillPrimaryTL10,
-                          buttonTextStyle:
-                              CustomTextStyles.titleMediumWhiteA700,
+                        SizedBox(height: 16.0),
+                        ElevatedButton(
                           onPressed: () {
                             Navigator.pop(context);
-                            // Add your logic for handling "Upload Bukti Seminar" button press
-                            // For example, navigate to the upload screen
                           },
+                          child: Text("Back"),
                         ),
                       ],
                     ),
@@ -276,29 +249,6 @@ class _DetailScreenState extends State<DetailScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  PreferredSizeWidget _buildWelcomeAppBar(BuildContext context) {
-    return CustomAppBar(
-      title: AppbarTitle(
-        text: "Welcome",
-        margin: EdgeInsets.only(left: 21.h),
-      ),
-      actions: [
-        AppbarSubtitle(
-          text: userName ?? "User Name",
-          margin: EdgeInsets.fromLTRB(15.h, 21.v, 8.h, 12.v),
-        ),
-        AppbarTrailingImage(
-          imagePath: ImageConstant.imgAvatars3dAvatar21,
-          margin: EdgeInsets.only(
-            left: 9.h,
-            top: 8.v,
-            right: 23.h,
-          ),
-        ),
-      ],
     );
   }
 }

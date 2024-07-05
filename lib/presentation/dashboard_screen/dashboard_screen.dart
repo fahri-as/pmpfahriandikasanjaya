@@ -112,13 +112,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         },
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () => _logout(context),
-                        child: Text('Logout'),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -135,15 +128,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       actions: [
         AppbarSubtitle(
           text: userName ?? "User Name",
-          margin: EdgeInsets.fromLTRB(15.h, 21.v, 8.h, 12.v),
+          margin: EdgeInsets.fromLTRB(15.h, 21.v, 5.h, 12.v),
         ),
-        InkWell(
-          onTap: () async {
+        SizedBox(width: 8),
+        GestureDetector(
+          onTap: () {
             Navigator.pushNamed(context, AppRoutes.profileScreen);
           },
-          child: AppbarTrailingImage(
-            imagePath: ImageConstant.imgAvatars3dAvatar21,
-            margin: EdgeInsets.only(left: 9.h, top: 8.v, right: 23.h),
+          child: CircleAvatar(
+            backgroundImage: AssetImage('assets/images/avatar.png'),
+            radius: 20,
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.transparent,
+            child: Image.asset('assets/images/avatar.png'),
           ),
         ),
       ],

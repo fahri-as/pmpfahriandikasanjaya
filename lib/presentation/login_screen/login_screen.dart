@@ -65,9 +65,11 @@ class LoginScreen extends StatelessWidget {
           print(
               'Login object: ${login.token}, ${login.type}, ${login.expiresAt}');
 
-          // Store the token
+          // Store the token and user name
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', login.token);
+          await prefs.setString(
+              'user_name', jsonResponse['data']['profile']['name']);
 
           // Navigate to dashboard screen on successful login
           showDialog(
@@ -100,24 +102,20 @@ class LoginScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Opacity(
-            opacity: 0.9,
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/background.jpg'),
-                  fit: BoxFit.cover,
-                ),
-              ),
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/background.jpg'),
+              fit: BoxFit.cover,
             ),
           ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
+          child: ListView(
+            padding: EdgeInsets.symmetric(vertical: 100.0, horizontal: 20.0),
+            children: [
+              Center(
+                child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -188,8 +186,10 @@ class LoginScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
-                Container(
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -232,10 +232,10 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

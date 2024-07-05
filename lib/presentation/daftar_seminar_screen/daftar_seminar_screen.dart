@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../../core/app_export.dart';
-import '../../widgets/custom_floating_text_field.dart'; // ignore_for_file: must_be_immutable
+import '../../widgets/custom_floating_text_field.dart';
 
 class DaftarSeminarScreen extends StatelessWidget {
   DaftarSeminarScreen({Key? key}) : super(key: key);
@@ -58,50 +58,45 @@ class DaftarSeminarScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Container(
-          width: double.maxFinite,
-          padding: EdgeInsets.symmetric(vertical: 12.v),
-          child: Column(
-            children: [
-              _buildHeaderRow(context),
-              SizedBox(height: 34.v),
-              Text(
-                "Daftar Seminar",
-                style: theme.textTheme.titleMedium,
-              ),
-              SizedBox(height: 6.v),
-              Divider(
-                color: theme.colorScheme.primary,
-              ),
-              Divider(
-                color: appTheme.green200,
-              ),
-              SizedBox(height: 19.v),
-              _buildInputFields(context),
-              SizedBox(height: 5.v),
-            ],
+        body: SingleChildScrollView(
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 12.v),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildHeaderRow(context),
+                SizedBox(height: 34.v),
+                Text(
+                  "Daftar Seminar",
+                  style: theme.textTheme.titleMedium,
+                ),
+                SizedBox(height: 6.v),
+                Divider(
+                  color: theme.colorScheme.primary,
+                ),
+                Divider(
+                  color: appTheme.green200,
+                ),
+                SizedBox(height: 19.v),
+                _buildInputFields(context),
+                SizedBox(height: 5.v),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// Section Widget
   Widget _buildHeaderRow(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 21.h,
-        right: 15.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 21.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Padding(
-            padding: EdgeInsets.only(
-              top: 10.v,
-              bottom: 11.v,
-            ),
+            padding: EdgeInsets.symmetric(vertical: 10.v),
             child: Text(
               "Welcome",
               style: theme.textTheme.titleSmall,
@@ -109,24 +104,21 @@ class DaftarSeminarScreen extends StatelessWidget {
           ),
           Spacer(),
           FutureBuilder<String?>(
-            future: _getUserName(), // Fetch username from SharedPreferences
+            future: _getUserName(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator(); // Placeholder while loading
+                return CircularProgressIndicator();
               }
               if (snapshot.hasData) {
                 return Padding(
-                  padding: EdgeInsets.only(
-                    top: 13.v,
-                    bottom: 12.v,
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: 13.v),
                   child: Text(
                     snapshot.data!,
                     style: theme.textTheme.labelMedium,
                   ),
                 );
               } else {
-                return SizedBox(); // Handle error case or default behavior
+                return SizedBox();
               }
             },
           ),
@@ -146,50 +138,29 @@ class DaftarSeminarScreen extends StatelessWidget {
     return prefs.getString('user_name');
   }
 
-  /// Section Widget
   Widget _buildInputFields(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(
-        left: 13.h,
-        right: 19.h,
-      ),
+      width: 326.h, // Sesuaikan dengan ukuran yang sesuai
+      margin: EdgeInsets.symmetric(horizontal: 13.h),
       decoration: AppDecoration.fillGreen.copyWith(
         borderRadius: BorderRadiusStyle.roundedBorder28,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(height: 20.v),
           Container(
             padding: EdgeInsets.fromLTRB(24.h, 13.v, 24.h, 12.v),
             decoration: AppDecoration.outlineOnPrimaryContainer,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 3.v),
                 Text(
-                  "Select date",
+                  "Masukan data yang diperlukan!",
                   style: CustomTextStyles.titleSmallGray800_1,
                 ),
-                SizedBox(height: 41.v),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Enter date",
-                      style: theme.textTheme.headlineLarge,
-                    ),
-                    CustomImageView(
-                      imagePath: ImageConstant.imgTrophy,
-                      height: 24.adaptSize,
-                      width: 24.adaptSize,
-                      margin: EdgeInsets.only(
-                        top: 7.v,
-                        bottom: 6.v,
-                      ),
-                    )
-                  ],
-                )
               ],
             ),
           ),
@@ -233,34 +204,31 @@ class DaftarSeminarScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 35.v),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: EdgeInsets.only(right: 24.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context); // Cancel action
-                    },
-                    child: Text(
-                      "Cancel",
-                      style: CustomTextStyles.titleSmallGray800_1,
-                    ),
+          Padding(
+            padding: EdgeInsets.only(right: 24.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context); // Cancel action
+                  },
+                  child: Text(
+                    "Cancel",
+                    style: CustomTextStyles.titleSmallGray800_1,
                   ),
-                  SizedBox(width: 24.h),
-                  GestureDetector(
-                    onTap: () {
-                      _submitSeminarData(context); // Save action
-                    },
-                    child: Text(
-                      "Save",
-                      style: CustomTextStyles.titleSmallPrimary,
-                    ),
+                ),
+                SizedBox(width: 24.h),
+                GestureDetector(
+                  onTap: () {
+                    _submitSeminarData(context); // Save action
+                  },
+                  child: Text(
+                    "Save",
+                    style: CustomTextStyles.titleSmallPrimary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           SizedBox(height: 25.v),
