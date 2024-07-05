@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import '../../theme/custom_button_style.dart';
+import '../../theme/custom_text_style.dart';
+import '../../widgets/custom_elevated_button.dart';
 import '../../models/detail_internship.dart'; // Import the DetailInternship model
 
 class DetailScreen extends StatefulWidget {
@@ -227,16 +230,23 @@ class _DetailScreenState extends State<DetailScreen> {
                           style: TextStyle(fontSize: 16.0),
                         ),
                         SizedBox(height: 24.0),
-                        ElevatedButton(
-                          onPressed: _postFinalInternship,
-                          child: Text("Post Final"),
+                        CustomElevatedButton(
+                          height: 48,
+                          text: "Post Final",
+                          onPressed: () {
+                            _postFinalInternship();
+                          },
+                          buttonStyle: CustomButtonStyles.fillPrimaryTL10,
+                          buttonTextStyle:
+                              CustomTextStyles.titleMediumWhiteA700,
                         ),
                         SizedBox(height: 16.0),
-                        ElevatedButton(
+                        CustomElevatedButton(
+                          height: 48,
+                          text: "Back",
                           onPressed: () {
                             Navigator.pop(context);
                           },
-                          child: Text("Back"),
                         ),
                       ],
                     ),
