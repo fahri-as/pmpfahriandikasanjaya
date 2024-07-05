@@ -1,15 +1,58 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import '../../core/app_export.dart';
 import '../../widgets/custom_floating_text_field.dart'; // ignore_for_file: must_be_immutable
 
-// ignore_for_file: must_be_immutable
 class DaftarSeminarScreen extends StatelessWidget {
-  DaftarSeminarScreen({Key? key})
-      : super(
-          key: key,
-        );
+  DaftarSeminarScreen({Key? key}) : super(key: key);
 
   TextEditingController dateController = TextEditingController();
+  TextEditingController titleController = TextEditingController();
+  TextEditingController roomIdController = TextEditingController();
+  TextEditingController linkController = TextEditingController();
+
+  Future<void> _submitSeminarData(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    String? internshipId = prefs.getString('internship_id');
+
+    if (token == null || internshipId == null) {
+      // Handle error
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse(
+          'https://backend-pmp.unand.dev/api/my-internships/$internshipId/seminar'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json'
+      },
+      body: jsonEncode({
+        'title': titleController.text,
+        'seminar_room_id': roomIdController.text,
+        'link_seminar': linkController.text,
+        'seminar_date': dateController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Handle success
+      Navigator.pop(context); // Close current screen
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Seminar data saved successfully')),
+      );
+
+      // Optionally, refresh dashboard (if needed)
+      // Navigator.pushReplacementNamed(context, '/dashboard'); // Example for navigating to dashboard
+    } else {
+      // Handle error
+      print(
+          'Failed to submit seminar data: ${response.statusCode} ${response.body}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +78,8 @@ class DaftarSeminarScreen extends StatelessWidget {
                 color: appTheme.green200,
               ),
               SizedBox(height: 19.v),
-              _buildInputDate(context),
-              SizedBox(height: 5.v)
+              _buildInputFields(context),
+              SizedBox(height: 5.v),
             ],
           ),
         ),
@@ -65,15 +108,27 @@ class DaftarSeminarScreen extends StatelessWidget {
             ),
           ),
           Spacer(),
-          Padding(
-            padding: EdgeInsets.only(
-              top: 13.v,
-              bottom: 12.v,
-            ),
-            child: Text(
-              "Fahri Andika Sanjaya",
-              style: theme.textTheme.labelMedium,
-            ),
+          FutureBuilder<String?>(
+            future: _getUserName(), // Fetch username from SharedPreferences
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator(); // Placeholder while loading
+              }
+              if (snapshot.hasData) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    top: 13.v,
+                    bottom: 12.v,
+                  ),
+                  child: Text(
+                    snapshot.data!,
+                    style: theme.textTheme.labelMedium,
+                  ),
+                );
+              } else {
+                return SizedBox(); // Handle error case or default behavior
+              }
+            },
           ),
           CustomImageView(
             imagePath: ImageConstant.imgAvatars3dAvatar21,
@@ -86,8 +141,13 @@ class DaftarSeminarScreen extends StatelessWidget {
     );
   }
 
+  Future<String?> _getUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_name');
+  }
+
   /// Section Widget
-  Widget _buildInputDate(BuildContext context) {
+  Widget _buildInputFields(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(
         left: 13.h,
@@ -136,12 +196,40 @@ class DaftarSeminarScreen extends StatelessWidget {
           SizedBox(height: 10.v),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.h),
-            child: CustomFloatingTextField(
-              controller: dateController,
-              labelText: "Date",
-              labelStyle: theme.textTheme.bodyLarge!,
-              hintText: "Date",
-              textInputAction: TextInputAction.done,
+            child: Column(
+              children: [
+                CustomFloatingTextField(
+                  controller: titleController,
+                  labelText: "Title",
+                  labelStyle: theme.textTheme.bodyLarge!,
+                  hintText: "Enter Title",
+                  textInputAction: TextInputAction.done,
+                ),
+                SizedBox(height: 10.v),
+                CustomFloatingTextField(
+                  controller: roomIdController,
+                  labelText: "Seminar Room ID",
+                  labelStyle: theme.textTheme.bodyLarge!,
+                  hintText: "Enter Seminar Room ID",
+                  textInputAction: TextInputAction.done,
+                ),
+                SizedBox(height: 10.v),
+                CustomFloatingTextField(
+                  controller: linkController,
+                  labelText: "Link Seminar",
+                  labelStyle: theme.textTheme.bodyLarge!,
+                  hintText: "Enter Link Seminar",
+                  textInputAction: TextInputAction.done,
+                ),
+                SizedBox(height: 10.v),
+                CustomFloatingTextField(
+                  controller: dateController,
+                  labelText: "Date",
+                  labelStyle: theme.textTheme.bodyLarge!,
+                  hintText: "Enter Date",
+                  textInputAction: TextInputAction.done,
+                ),
+              ],
             ),
           ),
           SizedBox(height: 35.v),
@@ -152,22 +240,30 @@ class DaftarSeminarScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    "Cancel",
-                    style: CustomTextStyles.titleSmallPrimary,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 32.h),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context); // Cancel action
+                    },
                     child: Text(
-                      "OK",
+                      "Cancel",
+                      style: CustomTextStyles.titleSmallGray800_1,
+                    ),
+                  ),
+                  SizedBox(width: 24.h),
+                  GestureDetector(
+                    onTap: () {
+                      _submitSeminarData(context); // Save action
+                    },
+                    child: Text(
+                      "Save",
                       style: CustomTextStyles.titleSmallPrimary,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
           ),
-          SizedBox(height: 23.v)
+          SizedBox(height: 25.v),
         ],
       ),
     );

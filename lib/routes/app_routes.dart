@@ -7,22 +7,17 @@ import '../presentation/dashboard_screen/dashboard_screen.dart';
 import '../presentation/detail_screen/detail_screen.dart';
 import '../presentation/kerja_praktek_screen/kerja_praktek_screen.dart';
 import '../presentation/seminar_screen/seminar_screen.dart';
+import '../presentation/profile_screen/profile_screen.dart';
 
 class AppRoutes {
   static const String dashboardScreen = '/dashboard_screen';
-
   static const String detailScreen = '/detail_screen';
-
   static const String daftarSeminarScreen = '/daftar_seminar_screen';
-
   static const String seminarScreen = '/seminar_screen';
-
   static const String kerjaPraktekScreen = '/kerja_praktek_screen';
-
   static const String appNavigationScreen = '/app_navigation_screen';
-
   static const String loginScreen = '/login_screen';
-
+  static const String profileScreen = '/profile_screen';
   static const String initialRoute = '/initialRoute';
 
   static Map<String, WidgetBuilder> routes = {
@@ -33,6 +28,7 @@ class AppRoutes {
     kerjaPraktekScreen: (context) => KerjaPraktekScreen(),
     appNavigationScreen: (context) => AppNavigationScreen(),
     loginScreen: (context) => LoginScreen(),
+    profileScreen: (context) => ProfileScreen(),
     initialRoute: (context) => AppNavigationScreen()
   };
 }

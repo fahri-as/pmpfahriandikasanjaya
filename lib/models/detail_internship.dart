@@ -61,34 +61,34 @@ class DetailInternship {
 
   factory DetailInternship.fromJson(Map<String, dynamic> json) {
     return DetailInternship(
-      id: json["id"] ?? "",
-      internshipProposalId: json["internship_proposal_id"] ?? "",
-      studentId: json["student_id"] ?? "",
-      advisorId: json["advisor_id"] ?? "",
-      status: json["status"] ?? "",
+      id: json["id"]?.toString() ?? "",
+      internshipProposalId: json["internship_proposal_id"]?.toString() ?? "",
+      studentId: json["student_id"]?.toString() ?? "",
+      advisorId: json["advisor_id"]?.toString() ?? "",
+      status: json["status"]?.toString() ?? "",
       startAt: json["start_at"] != null
           ? DateTime.parse(json["start_at"])
           : DateTime.now(),
       endAt: json["end_at"] != null
           ? DateTime.parse(json["end_at"])
           : DateTime.now(),
-      reportTitle: json["report_title"] ?? "",
+      reportTitle: json["report_title"]?.toString() ?? "",
       seminarDate: json["seminar_date"] != null
           ? DateTime.parse(json["seminar_date"])
           : DateTime.now(),
       seminarRoomId: json["seminar_room_id"],
-      linkSeminar: json["link_seminar"] ?? "",
+      linkSeminar: json["link_seminar"]?.toString() ?? "",
       seminarDeadline: json["seminar_deadline"] != null
           ? DateTime.parse(json["seminar_deadline"])
           : DateTime.now(),
-      attendeesList: json["attendees_list"] ?? "",
-      internshipScore: json["internship_score"] ?? "",
-      activityReport: json["activity_report"] ?? "",
-      seminarNotes: json["seminar_notes"] ?? "",
-      workReport: json["work_report"] ?? "",
-      certificate: json["certificate"] ?? "",
-      reportReceipt: json["report_receipt"] ?? "",
-      grade: json["grade"] ?? "",
+      attendeesList: json["attendees_list"]?.toString() ?? "",
+      internshipScore: json["internship_score"]?.toString() ?? "",
+      activityReport: json["activity_report"]?.toString() ?? "",
+      seminarNotes: json["seminar_notes"]?.toString() ?? "",
+      workReport: json["work_report"]?.toString() ?? "",
+      certificate: json["certificate"]?.toString() ?? "",
+      reportReceipt: json["report_receipt"]?.toString() ?? "",
+      grade: json["grade"]?.toString() ?? "",
       createdAt: json["created_at"] != null
           ? DateTime.parse(json["created_at"])
           : DateTime.now(),
@@ -97,26 +97,7 @@ class DetailInternship {
           : DateTime.now(),
       proposal: json["proposal"] != null
           ? Proposal.fromJson(json["proposal"])
-          : Proposal(
-              id: "",
-              internshipStudentId: "",
-              internshipLecturerId: "",
-              type: "",
-              title: "",
-              companyId: "",
-              subject: "",
-              description: "",
-              status: "",
-              canceledAt: DateTime.now(),
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-              company: Company(
-                  id: "",
-                  name: "",
-                  address: "",
-                  description: "",
-                  createdAt: DateTime.now(),
-                  updatedAt: DateTime.now())),
+          : Proposal.empty(),
       audiences: json["audiences"] != null
           ? List<dynamic>.from(json["audiences"].map((x) => x))
           : [],
@@ -184,15 +165,15 @@ class Proposal {
 
   factory Proposal.fromJson(Map<String, dynamic> json) {
     return Proposal(
-      id: json["id"] ?? "",
-      internshipStudentId: json["internship_student_id"] ?? "",
-      internshipLecturerId: json["internship_lecturer_id"] ?? "",
-      type: json["type"] ?? "",
-      title: json["title"] ?? "",
-      companyId: json["company_id"] ?? "",
-      subject: json["subject"] ?? "",
-      description: json["description"] ?? "",
-      status: json["status"] ?? "",
+      id: json["id"]?.toString() ?? "",
+      internshipStudentId: json["internship_student_id"]?.toString() ?? "",
+      internshipLecturerId: json["internship_lecturer_id"]?.toString() ?? "",
+      type: json["type"]?.toString() ?? "",
+      title: json["title"]?.toString() ?? "",
+      companyId: json["company_id"]?.toString() ?? "",
+      subject: json["subject"]?.toString() ?? "",
+      description: json["description"]?.toString() ?? "",
+      status: json["status"]?.toString() ?? "",
       canceledAt: json["canceled_at"] != null
           ? DateTime.parse(json["canceled_at"])
           : DateTime.now(),
@@ -204,13 +185,7 @@ class Proposal {
           : DateTime.now(),
       company: json["company"] != null
           ? Company.fromJson(json["company"])
-          : Company(
-              id: "",
-              name: "",
-              address: "",
-              description: "",
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now()),
+          : Company.empty(),
     );
   }
 
@@ -229,6 +204,22 @@ class Proposal {
         "updated_at": updatedAt.toIso8601String(),
         "company": company.toJson(),
       };
+
+  factory Proposal.empty() => Proposal(
+        id: "",
+        internshipStudentId: "",
+        internshipLecturerId: "",
+        type: "",
+        title: "",
+        companyId: "",
+        subject: "",
+        description: "",
+        status: "",
+        canceledAt: DateTime.now(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        company: Company.empty(),
+      );
 }
 
 class Company {
@@ -249,10 +240,10 @@ class Company {
   DateTime updatedAt;
 
   factory Company.fromJson(Map<String, dynamic> json) => Company(
-        id: json["id"] ?? "",
-        name: json["name"] ?? "",
-        address: json["address"] ?? "",
-        description: json["description"] ?? "",
+        id: json["id"]?.toString() ?? "",
+        name: json["name"]?.toString() ?? "",
+        address: json["address"]?.toString() ?? "",
+        description: json["description"]?.toString() ?? "",
         createdAt: json["created_at"] != null
             ? DateTime.parse(json["created_at"])
             : DateTime.now(),
@@ -269,4 +260,13 @@ class Company {
         "created_at": createdAt.toIso8601String(),
         "updated_at": updatedAt.toIso8601String(),
       };
+
+  factory Company.empty() => Company(
+        id: "",
+        name: "",
+        address: "",
+        description: "",
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
 }

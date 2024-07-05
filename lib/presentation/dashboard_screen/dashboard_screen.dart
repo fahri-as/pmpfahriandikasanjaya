@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/app_export.dart';
 import '../../widgets/app_bar/appbar_subtitle.dart';
 import '../../widgets/app_bar/appbar_title.dart';
@@ -20,11 +20,13 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   Future<List<Internship>>? futureInternships;
+  String? userName;
 
   @override
   void initState() {
     super.initState();
     _checkToken();
+    _loadUserProfileName();
   }
 
   Future<void> _checkToken() async {
@@ -35,19 +37,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Navigator.pushNamedAndRemoveUntil(
           context, AppRoutes.loginScreen, (route) => false);
     } else {
-      futureInternships = fetchInternshipData(token);
-      setState(() {});
+      _fetchInternships(token);
     }
   }
 
-  Future<void> _logout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    print('Token removed: ${prefs.getString('token')}'); // Debug print
-
-    Navigator.pushNamedAndRemoveUntil(
-        context, AppRoutes.loginScreen, (route) => false);
-    print('Navigated to Login Screen'); // Debug print
+  Future<void> _fetchInternships(String token) async {
+    futureInternships = fetchInternshipData(token);
+    setState(() {});
   }
 
   Future<List<Internship>> fetchInternshipData(String token) async {
@@ -57,13 +53,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
 
     if (response.statusCode == 200) {
-      print('Response data: ${response.body}'); // Debug print
       return internshipsFromJson(response.body);
     } else {
-      print(
-          'Failed to load internship data: ${response.statusCode} ${response.body}'); // Debug print
       throw Exception('Failed to load internship data');
     }
+  }
+
+  Future<void> _storeInternshipId(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('internship_id', id);
+  }
+
+  Future<void> _loadUserProfileName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? storedName = prefs.getString('user_name');
+    setState(() {
+      userName = storedName;
+    });
   }
 
   @override
@@ -73,40 +79,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
         appBar: _buildAppBarWelcome(context),
         body: futureInternships == null
             ? Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  Expanded(
-                    child: FutureBuilder<List<Internship>>(
-                      future: futureInternships,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Center(
-                              child: Text('Error: ${snapshot.error}'));
-                        } else if (snapshot.hasData) {
-                          return ListView.builder(
-                            itemCount: snapshot.data!.length,
-                            itemBuilder: (context, index) {
-                              return _buildDashboardContent(
-                                  context, snapshot.data![index]);
-                            },
-                          );
-                        } else {
-                          return Center(child: Text('No data available'));
-                        }
-                      },
+            : RefreshIndicator(
+                onRefresh: () async {
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  String token = prefs.getString('token')!;
+                  _fetchInternships(token);
+                },
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: FutureBuilder<List<Internship>>(
+                        future: futureInternships,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(
+                                child: Text('Error: ${snapshot.error}'));
+                          } else if (snapshot.hasData) {
+                            return ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                return _buildDashboardContent(
+                                    context, snapshot.data![index]);
+                              },
+                            );
+                          } else {
+                            return Center(child: Text('No data available'));
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () => _logout(context),
-                      child: Text('Logout'),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () => _logout(context),
+                        child: Text('Logout'),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
       ),
     );
@@ -120,21 +134,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       actions: [
         AppbarSubtitle(
-          text: "Fahri Andika Sanjaya",
+          text: userName ?? "User Name",
           margin: EdgeInsets.fromLTRB(15.h, 21.v, 8.h, 12.v),
         ),
-        PopupMenuButton<String>(
-          onSelected: (String result) {
-            if (result == 'logout') {
-              _logout(context);
-            }
+        InkWell(
+          onTap: () async {
+            Navigator.pushNamed(context, AppRoutes.profileScreen);
           },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            const PopupMenuItem<String>(
-              value: 'logout',
-              child: Text('Logout'),
-            ),
-          ],
           child: AppbarTrailingImage(
             imagePath: ImageConstant.imgAvatars3dAvatar21,
             margin: EdgeInsets.only(left: 9.h, top: 8.v, right: 23.h),
@@ -162,80 +168,117 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           SizedBox(height: 8.v),
           Text(
-            "Kerja Praktek",
+            internship.title,
             style: CustomTextStyles.bodyMediumOnPrimary,
           ),
-          SizedBox(height: 2.v),
-          _buildStackTitleSemen(context, internship),
+          SizedBox(height: 8.v),
+          Text(
+            "Start Date: ${internship.startAt}",
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 8.v),
+          Text(
+            "End Date: ${internship.endAt}",
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 8.v),
+          Text(
+            "Status: ${internship.status}",
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 8.v),
+          Text(
+            "Seminar Date: ${internship.seminarDate ?? 'Not Scheduled'}",
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 8.v),
+          Text(
+            "Grade: ${internship.grade}",
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 8.v),
+          Text(
+            "Lecturer: ${internship.lecturer}",
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 8.v),
+          _buildActionButtons(context, internship),
         ],
       ),
     );
   }
 
-  Widget _buildStackTitleSemen(BuildContext context, Internship internship) {
-    return SizedBox(
-      height: 300.v,
-      width: 294.h,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
+  Widget _buildActionButtons(BuildContext context, Internship internship) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  internship.company,
-                  style: theme.textTheme.bodyLarge,
-                ),
-                SizedBox(height: 4.v),
-                Text(
-                  internship.title,
-                  style: theme.textTheme.bodyMedium,
-                ),
-                SizedBox(height: 33.v),
-                SizedBox(
-                  width: 61.h,
-                  child: Text(
-                    "Anggota :\nLorem\nIpsum\nDolor\nSit",
-                    maxLines: 5,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium!.copyWith(
-                      height: 1.43,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 30.v),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      CustomOutlinedButton(
-                        width: 91.h,
-                        text: "Report",
-                      ),
-                      CustomElevatedButton(
-                        width: 85.h,
-                        text: "Detail",
-                        margin: EdgeInsets.only(left: 8.h),
-                        onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.detailScreen,
-                            arguments: internship.id,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          PopupMenuButton<String>(
+            onSelected: (String result) async {
+              switch (result) {
+                case 'Seminar':
+                  await _storeInternshipId(internship.id);
+                  print('Seminar Date: ${internship.seminarDate}'); // Debug log
+                  if (internship.seminarDate == null) {
+                    Navigator.pushNamed(context, AppRoutes.daftarSeminarScreen);
+                  } else {
+                    Navigator.pushNamed(context, AppRoutes.seminarScreen);
+                  }
+                  break;
+                case 'Kerja Praktek':
+                  Navigator.pushNamed(context, AppRoutes.kerjaPraktekScreen);
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'Seminar',
+                child: Text('Seminar'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'Kerja Praktek',
+                child: Text('Kerja Praktek'),
+              ),
+            ],
+            child: CustomOutlinedButton(
+              width: 91.h,
+              text: "Seminar",
+              onPressed: () async {
+                await _storeInternshipId(internship.id);
+                print('Seminar Date: ${internship.seminarDate}');
+                if (internship.seminarDate == null ||
+                    internship.seminarDate.isEmpty) {
+                  Navigator.pushNamed(context, AppRoutes.daftarSeminarScreen);
+                } else {
+                  Navigator.pushNamed(context, AppRoutes.seminarScreen);
+                }
+              },
             ),
+          ),
+          CustomElevatedButton(
+            width: 85.h,
+            text: "Detail",
+            margin: EdgeInsets.only(left: 8.h),
+            onPressed: () async {
+              await _storeInternshipId(internship.id);
+              Navigator.pushNamed(
+                context,
+                AppRoutes.detailScreen,
+              );
+            },
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('user_name');
+    await prefs.remove('internship_id'); // Remove stored internship ID
+    Navigator.pushNamedAndRemoveUntil(
+        context, AppRoutes.loginScreen, (route) => false);
   }
 }
