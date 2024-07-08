@@ -7,9 +7,7 @@ import '../../widgets/app_bar/appbar_subtitle.dart';
 import '../../widgets/app_bar/appbar_title.dart';
 import '../../widgets/app_bar/appbar_trailing_image.dart';
 import '../../widgets/app_bar/custom_app_bar.dart';
-import '../../widgets/custom_elevated_button.dart';
-import '../../widgets/custom_outlined_button.dart';
-import '../../models/internship.dart'; // Import the Internship model
+import '../../models/movie.dart'; // Import the Movie model
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -19,49 +17,33 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  Future<List<Internship>>? futureInternships;
+  Future<Movie>? futureMovie;
   String? userName;
 
   @override
   void initState() {
     super.initState();
-    _checkToken();
     _loadUserProfileName();
+    futureMovie = fetchTopMovie();
   }
 
-  Future<void> _checkToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-    if (token == null) {
-      // Token not found, navigate to login screen
-      Navigator.pushNamedAndRemoveUntil(
-          context, AppRoutes.loginScreen, (route) => false);
-    } else {
-      _fetchInternships(token);
-    }
-  }
-
-  Future<void> _fetchInternships(String token) async {
-    futureInternships = fetchInternshipData(token);
-    setState(() {});
-  }
-
-  Future<List<Internship>> fetchInternshipData(String token) async {
+  Future<Movie> fetchTopMovie() async {
     final response = await http.get(
-      Uri.parse('https://backend-pmp.unand.dev/api/my-internships'),
-      headers: {'Authorization': 'Bearer $token'},
+      Uri.parse(
+          'https://api.themoviedb.org/3/movie/popular?language=en-US&page=1'),
+      headers: {
+        'Authorization':
+            'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5YTgxZjM0YzU3ZDNkYzhmYTdmMDNjODA4ZjU2ZTlkMiIsIm5iZiI6MTcyMDQxNzEwMi41OTg3NDIsInN1YiI6IjY2OGI3OTkzMDQ3YTMwYzc0ODk4Y2I0YiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.kwyYDz2mirPAAIgZz03C544bdY_ROp8qsKy1wHvjuhY', // Replace with your actual API key
+        'accept': 'application/json'
+      },
     );
 
     if (response.statusCode == 200) {
-      return internshipsFromJson(response.body);
+      List<Movie> movies = moviesFromJson(response.body);
+      return movies.first;
     } else {
-      throw Exception('Failed to load internship data');
+      throw Exception('Failed to load movies');
     }
-  }
-
-  Future<void> _storeInternshipId(String id) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('internship_id', id);
   }
 
   Future<void> _loadUserProfileName() async {
@@ -77,42 +59,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: _buildAppBarWelcome(context),
-        body: futureInternships == null
+        body: futureMovie == null
             ? Center(child: CircularProgressIndicator())
             : RefreshIndicator(
                 onRefresh: () async {
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  String token = prefs.getString('token')!;
-                  _fetchInternships(token);
+                  setState(() {
+                    futureMovie = fetchTopMovie();
+                  });
                 },
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: FutureBuilder<List<Internship>>(
-                        future: futureInternships,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
-                            return Center(
-                                child: Text('Error: ${snapshot.error}'));
-                          } else if (snapshot.hasData) {
-                            return ListView.builder(
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, index) {
-                                return _buildDashboardContent(
-                                    context, snapshot.data![index]);
-                              },
-                            );
-                          } else {
-                            return Center(child: Text('No data available'));
-                          }
-                        },
-                      ),
-                    ),
-                  ],
+                child: FutureBuilder<Movie>(
+                  future: futureMovie,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (snapshot.hasData) {
+                      return SingleChildScrollView(
+                        child: _buildMovieCard(context, snapshot.data!),
+                      );
+                    } else {
+                      return Center(child: Text('No data available'));
+                    }
+                  },
                 ),
               ),
       ),
@@ -123,12 +92,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return CustomAppBar(
       title: AppbarTitle(
         text: "Welcome",
-        margin: EdgeInsets.only(left: 21.h),
+        margin: EdgeInsets.only(left: 21),
       ),
       actions: [
         AppbarSubtitle(
           text: userName ?? "User Name",
-          margin: EdgeInsets.fromLTRB(15.h, 21.v, 5.h, 12.v),
+          margin: EdgeInsets.fromLTRB(15, 21, 5, 12),
         ),
         SizedBox(width: 8),
         GestureDetector(
@@ -147,135 +116,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDashboardContent(BuildContext context, Internship internship) {
+  Widget _buildMovieCard(BuildContext context, Movie movie) {
     return Container(
-      width: 326.h,
-      margin: EdgeInsets.fromLTRB(17.h, 28.v, 17.h, 5.v),
-      padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 15.v),
+      width: MediaQuery.of(context).size.width * 0.9,
+      margin: EdgeInsets.symmetric(horizontal: 17, vertical: 28),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       decoration: AppDecoration.fillGreen.copyWith(
         borderRadius: BorderRadiusStyle.roundedBorder12,
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            internship.company,
+            movie.title,
             style: CustomTextStyles.titleMediumOnPrimary,
           ),
-          SizedBox(height: 8.v),
-          Text(
-            internship.title,
-            style: CustomTextStyles.bodyMediumOnPrimary,
-          ),
-          SizedBox(height: 8.v),
-          Text(
-            "Start Date: ${internship.startAt}",
-            style: CustomTextStyles.bodyMediumOnPrimary,
-          ),
-          SizedBox(height: 8.v),
-          Text(
-            "End Date: ${internship.endAt}",
-            style: CustomTextStyles.bodyMediumOnPrimary,
-          ),
-          SizedBox(height: 8.v),
-          Text(
-            "Status: ${internship.status}",
-            style: CustomTextStyles.bodyMediumOnPrimary,
-          ),
-          SizedBox(height: 8.v),
-          Text(
-            "Seminar Date: ${internship.seminarDate ?? 'Not Scheduled'}",
-            style: CustomTextStyles.bodyMediumOnPrimary,
-          ),
-          SizedBox(height: 8.v),
-          Text(
-            "Grade: ${internship.grade}",
-            style: CustomTextStyles.bodyMediumOnPrimary,
-          ),
-          SizedBox(height: 8.v),
-          Text(
-            "Lecturer: ${internship.lecturer}",
-            style: CustomTextStyles.bodyMediumOnPrimary,
-          ),
-          SizedBox(height: 8.v),
-          _buildActionButtons(context, internship),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context, Internship internship) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          PopupMenuButton<String>(
-            onSelected: (String result) async {
-              switch (result) {
-                case 'Seminar':
-                  await _storeInternshipId(internship.id);
-                  print('Seminar Date: ${internship.seminarDate}'); // Debug log
-                  if (internship.seminarDate == null) {
-                    Navigator.pushNamed(context, AppRoutes.daftarSeminarScreen);
-                  } else {
-                    Navigator.pushNamed(context, AppRoutes.seminarScreen);
-                  }
-                  break;
-                case 'Kerja Praktek':
-                  Navigator.pushNamed(context, AppRoutes.kerjaPraktekScreen);
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'Seminar',
-                child: Text('Seminar'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'Kerja Praktek',
-                child: Text('Kerja Praktek'),
-              ),
-            ],
-            child: CustomOutlinedButton(
-              width: 91.h,
-              text: "Seminar",
-              onPressed: () async {
-                await _storeInternshipId(internship.id);
-                print('Seminar Date: ${internship.seminarDate}');
-                if (internship.seminarDate == null ||
-                    internship.seminarDate.isEmpty) {
-                  Navigator.pushNamed(context, AppRoutes.daftarSeminarScreen);
-                } else {
-                  Navigator.pushNamed(context, AppRoutes.seminarScreen);
-                }
-              },
+          SizedBox(height: 8),
+          Center(
+            child: Image.network(
+              'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+              height: 200,
             ),
           ),
-          CustomElevatedButton(
-            width: 85.h,
-            text: "Detail",
-            margin: EdgeInsets.only(left: 8.h),
-            onPressed: () async {
-              await _storeInternshipId(internship.id);
-              Navigator.pushNamed(
-                context,
-                AppRoutes.detailScreen,
-              );
-            },
+          SizedBox(height: 8),
+          Text(
+            movie.overview,
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Release Date: ${movie.releaseDate}",
+            style: CustomTextStyles.bodyMediumOnPrimary,
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Rating: ${movie.voteAverage}",
+            style: CustomTextStyles.bodyMediumOnPrimary,
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _logout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('user_name');
-    await prefs.remove('internship_id'); // Remove stored internship ID
-    Navigator.pushNamedAndRemoveUntil(
-        context, AppRoutes.loginScreen, (route) => false);
   }
 }
